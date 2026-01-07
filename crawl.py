@@ -54,3 +54,17 @@ def get_images_from_html(html, base_url: str) -> list:
             print(f'{str(e)}: {link}')
         
     return collected_links
+
+def extract_page_data(html, page_url: str) -> dict:
+    title = get_h1_from_html(html)
+    paragraph = get_first_paragraph_from_html(html)
+    out_links = get_urls_from_html(html, page_url)
+    img_links = get_images_from_html(html, page_url)
+
+    return {
+        'url': page_url,
+        'h1': title,
+        'first_paragraph': paragraph,
+        'outgoing_links': out_links,
+        'image_urls': img_links
+    }
