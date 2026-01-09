@@ -1,5 +1,6 @@
+import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 def normalize_url(input_url: str) -> str:
     if 'https://' in input_url: input_url = input_url[8:]
@@ -68,3 +69,39 @@ def extract_page_data(html, page_url: str) -> dict:
         'outgoing_links': out_links,
         'image_urls': img_links
     }
+
+def get_html(url: str):
+    accept_var = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    headers = {'User-Agent': 'MiniCrawler/1.0', 'Accept': accept_var}
+    try: response = requests.get(url, headers=headers)
+    except Exception as e: print(f'error: {e}')
+
+    if response.status_code >= 400:
+        raise Exception(f'error: {response.status_code}, {response.reason}') 
+    if  'text/html' not in response.headers.get('Content-Type', ''):
+        actual_content_type = response.headers['Content-Type']
+        raise Exception(f'error: content type is not text/html but {actual_content_type}') 
+
+    return response.text
+
+def crawl_page(base_url, current_url=None, page_data=None):
+    if current_url is None: current_url = base_url
+    if page_data is None: page_data = {}
+
+    current_url_parsed = urlparse(current_url)
+    base_url_parsed = urlparse(base_url)
+    if current_url_parsed.netloc != base_url_parsed.netloc: return page_data
+
+    normalized_url =  normalize_url(current_url)
+    if normalized_url in page_data: return page_data
+
+    webpage = get_html(current_url)
+    page_data[normalized_url] = extract_page_data(webpage, current_url)
+    print(f'crawled: {current_url}')
+
+    all_links = get_urls_from_html(webpage, current_url) 
+    for link in all_links:
+        try: crawl_page(base_url, link, page_data)
+        except: continue
+
+    return page_data
