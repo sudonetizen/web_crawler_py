@@ -5,3 +5,5 @@ Run main.py file with three arguments: website address, max concurrency, max pag
 ```bash
 uv run main.py https://example.com 3 10
 ```
+
+After executing the command, report.csv file will be created with information about each page.
