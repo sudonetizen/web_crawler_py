@@ -3,6 +3,7 @@ import time
 import crawl
 import pprint
 import asyncio
+import csv_report
 
 async def main():
     if len(sys.argv) < 2:
@@ -30,6 +31,8 @@ async def main():
 
     print(time.time() - start_time)
     print(f'len of data pages is {len(page_data)}')
+
+    csv_report.write_csv_report(page_data)
 
     sys.exit(0)
 
